@@ -15,12 +15,18 @@ No test suite is configured.
 
 ## Architecture
 
-This is a single-file React app (`src/App.jsx`) — all state, logic, and UI live in one `App` component. There is no routing, no context, no custom hooks, and no external state library.
+React + Vite app with no routing, no context, and no external state library. Components live under `src/components/<ComponentName>/<ComponentName>.jsx`.
 
-**State:** `transactions` is the core array; each item has `{ id, description, amount, type, category, date }`. `amount` is stored as a string (not a number) — this is a known bug that causes incorrect totals via string concatenation instead of numeric addition.
+**State ownership:**
+- `App` — owns `transactions` array and `categories`. Passes data down; does not compute derived values itself.
+- `Summary` — receives `transactions`, computes `totalIncome`, `totalExpenses`, and `balance` internally.
+- `TransactionForm` — owns its own form state (`description`, `amount`, `type`, `category`). Calls `onAdd(transaction)` prop on submit.
+- `TransactionList` — owns filter state (`filterType`, `filterCategory`). Receives `transactions` and `categories`, filters internally for display.
 
-**Data flow:** All derived values (totals, filtered list) are computed inline during render from the `transactions` array. Nothing is persisted — state resets on page reload.
+**Data flow:** `App` passes `transactions` to `Summary` and `TransactionList`, and an `onAdd` callback to `TransactionForm`. Nothing is persisted — state resets on page reload.
 
-**Categories** are a hardcoded array: `["food", "housing", "utilities", "transport", "entertainment", "salary", "other"]`. Any new category must be added there.
+**Transaction shape:** `{ id, description, amount, type, category, date }`. `amount` is a number. `type` is `"income"` or `"expense"`.
+
+**Categories** are a hardcoded array in `App`: `["food", "housing", "utilities", "transport", "entertainment", "salary", "other"]`. Any new category must be added there.
 
 **Styling:** Flat CSS in `src/App.css` with class names like `.income-amount`, `.expense-amount`, `.balance-amount`. The `.delete-btn` class exists in the CSS but the delete button is not yet rendered in the JSX.
